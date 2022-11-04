@@ -1,0 +1,3 @@
+#!/bin/bash
+
+dpkg -S "$1" | grep 'bin/' | grep --color "$1\$"
