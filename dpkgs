@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [[ $1 = -s && $# = 2 ]]; then
-    dpkg -S "$2" | grep "bin/$2" | grep --color "$2\$"
+    dpkg -S "$2" | grep -P "bin/$2(\..*)?$" | grep -P --color "(?<=/)$2"
 elif [[ $# = 1 ]]; then
-    dpkg -S "$1" | grep 'bin/' | grep --color "$1\$"
+    dpkg -S "$1" | grep 'bin/' | grep -P --color "(?<=/)$1"
 else echo Error.
 fi
