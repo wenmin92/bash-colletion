@@ -1,8 +1,32 @@
 #!/bin/bash
+# Find package owning file.
+# 简化 dpkg -L xxx | grep xxx
 
-if [[ $1 = -s && $# = 2 ]]; then
-    dpkg -S "$2" | grep -P "bin/$2(\..*)?$" | grep -P --color "(?<=/)$2"
+function help() {
+    cat <<EOF
+Usage: dpkgs [-s] <pattern>
+    Find package owning file.
+
+    Options:
+      -s    exactly for the pattern only
+      -h    display this help and exit
+
+EOF
+} >&2
+
+(($# < 1)) && { help; exit 2; } # 未传参时显示帮助并退出
+
+while getopts 'sh' OPT; do
+    case $OPT in
+        s) flagS=1;;
+        \?|h) help;;
+    esac
+done
+
+shift $((OPTIND - 1))
+
+if [ "$flagS" ]; then
+    dpkg -S "$@" | grep -P "bin/$1(\..*)?$" | grep --color -P "(?<=/)$1"
 elif [[ $# = 1 ]]; then
-    dpkg -S "$1" | grep 'bin/' | grep -P --color "(?<=/)$1"
-else echo Error.
+    dpkg -S "$@" | grep -F 'bin/' | grep --color -P "(?<=/)$1"
 fi
