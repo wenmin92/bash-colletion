@@ -1,0 +1,49 @@
+#!/bin/bash
+# Find package owning file.
+# 简化 dpkg -L xxx | grep xxx
+
+function help() {
+    cat <<EOF
+Usage: dpkgs [-s] <pattern>
+    Find package owning file.
+
+    Options:
+      -s    exactly for the pattern only
+      -h    display this help and exit
+
+EOF
+} >&2
+
+(($# < 1)) && { help; exit 2; } # 未传参时显示帮助并退出
+
+# parse options
+while getopts 'sh' OPT; do
+    case $OPT in
+        s) flagS=1;;
+        \?|h) help;;
+    esac
+done
+shift $((OPTIND - 1))
+
+# check for package manager
+if [ -x "$(command -v dpkg)" ]; then PKG_MGR='dpkg'
+elif [ -x "$(command -v pacman)" ]; then PKG_MGR='pacman'
+else echo 'Error: No supported package manager found.' >&2; exit 1
+fi
+
+# check for the file
+if [ -z "$1" ]; then
+    echo 'Error: No file specified.' >&2; exit 1
+fi
+
+# search for package that owns the specified file
+if [ "$PKG_MGR" == 'dpkg' ]; then RESULT=$(dpkg -S "$1")
+elif [ "$PKG_MGR" == 'pacman' ]; then RESULT=$(pacman -Qo --color=always "$1")
+fi
+
+# apply color
+if [ "$flagS" ]; then
+    echo "$RESULT" | grep --color=always -P "(?<=bin/)$1(?=\..+)?$"
+elif [[ $# = 1 ]]; then
+    echo "$RESULT" | grep --color=always -P "(?<=bin/)$1"
+fi

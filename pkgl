@@ -1,0 +1,54 @@
+#!/bin/bash
+# List files 'owned' by package.
+# 简化 dpkg -L xxx | grep xxx
+
+function help() {
+    cat <<EOF
+Usage: dpkgl [-b|-m] <package>
+    List files 'owned' by package.
+
+    Options:
+      -b    only bin files
+      -m    only manpage files
+      -h    display this help and exit
+
+EOF
+} >&2
+
+(($# < 1)) && { help; exit 2; } # 未传参时显示帮助并退出
+
+# parse options
+while getopts 'bmh' OPT; do
+    case $OPT in
+        b) flagBin=1;;
+        m) flagMan=1;;
+        \?|h) help; exit 2;;
+        *) ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+# check for package manager
+if [ -x "$(command -v dpkg)" ]; then PKG_MGR='dpkg'
+elif [ -x "$(command -v pacman)" ]; then PKG_MGR='pacman'
+else echo 'Error: No supported package manager found.' >&2; exit 1
+fi
+
+# check for the package
+if [ -z "$1" ]; then
+    echo 'Error: No package specified.' >&2; exit 1
+fi
+
+# list files owned by the given package
+if [ "$PKG_MGR" == 'dpkg' ]; then RESULT=$(dpkg -L "$1")
+elif [ "$PKG_MGR" == 'pacman' ]; then RESULT=$(pacman -Ql --color=always "$1")
+fi
+
+# apply color
+if [ "$flagBin" ]; then
+echo "$RESULT" | grep --color=always -P '(?<=bin/)[^/]*$'
+elif [ "$flagMan" ]; then
+echo "$RESULT" | grep --color=always -P '(?<=man/man\d/)[^/]*(?=\.\d\.gz)'
+else
+echo "$RESULT" | grep --color=always -P '(?<=bin/)[^/]*$'
+fi
