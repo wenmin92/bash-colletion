@@ -43,7 +43,7 @@ fi
 
 # apply color
 if [ "$flagS" ]; then
-    echo "$RESULT" | grep --color=always -P "(?<=bin/)$1(?=\..+)?$"
+    echo "$RESULT" | grep -F 'bin/' | grep --color=always -P "(?<=/)$1(?=\.\S+)?(\s|$)"
 elif [[ $# = 1 ]]; then
-    echo "$RESULT" | grep --color=always -P "(?<=bin/)$1"
+    echo "$RESULT" | grep -F 'bin/' | grep --color=always -P "(?<=/)$1"
 fi

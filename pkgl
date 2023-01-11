@@ -46,9 +46,9 @@ fi
 
 # apply color
 if [ "$flagBin" ]; then
-echo "$RESULT" | grep --color=always -P '(?<=bin/)[^/]+$'
+echo "$RESULT" | grep -F 'bin/' | grep --color=always -P '[^/]+$'
 elif [ "$flagMan" ]; then
-echo "$RESULT" | grep --color=always -P '(?<=man/man\d/)[^/]+(?=\.\d\.gz)'
+echo "$RESULT" | grep -P 'man/man\d/' | grep --color=always -P '[^/]+(?=\.\d\w*\.gz$)'
 else
-echo "$RESULT" | grep --color=always -P '(?<=bin/)[^/]+$'
+echo "$RESULT" | grep -F 'bin/' | grep --color=always -P '[^/]+$'
 fi
